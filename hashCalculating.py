@@ -12,14 +12,17 @@ def chooseDirectory():
     
     return directory
 
+directory = chooseDirectory()
+
 def calculateHash(filePath):
     with open(filePath, 'rb') as file:
         hash_md5=hashlib.md5()
-        hash_md5.update(file.read())
+        hash_md5.update(file.read()) 
         return hash_md5.hexdigest()
 
 def hashAllFiles(directory):
-    writeFile=open("hashes.json", "r+")
+    writeFile=open(directory+"/hashes.json", "w")
+    print(type(writeFile))
     data = ''
     for root, directories, files in os.walk(directory):
         for fileName in files:
@@ -30,5 +33,4 @@ def hashAllFiles(directory):
     return(data)
 
 if __name__ == "__main__":
-    directory = chooseDirectory()
     print(hashAllFiles(directory))
