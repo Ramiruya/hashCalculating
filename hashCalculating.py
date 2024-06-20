@@ -23,14 +23,15 @@ def calculateHash(filePath):
 def hashAllFiles(directory):
     writeFile=open(directory+"/hashes.json", "w")
     print(type(writeFile))
-    data = ''
+    data = {}
     for root, directories, files in os.walk(directory):
         for fileName in files:
             filePath = os.path.join(root, fileName)
             hashValue = calculateHash(filePath)
-            data += f'{fileName}:{hashValue}\n'
-    json.dump(data, writeFile)
+            data[fileName]=hashValue
+    json.dump(data, writeFile, indent=4)
     return(data)
 
 if __name__ == "__main__":
     print(hashAllFiles(directory))
+
