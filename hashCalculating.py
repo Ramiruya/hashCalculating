@@ -34,4 +34,4 @@ def hashAllFiles(directory):
 
 if __name__ == "__main__":
     print(hashAllFiles(directory))
-
+    print(calculateHash(directory+"/hashes.json"))
