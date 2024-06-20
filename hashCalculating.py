@@ -19,14 +19,15 @@ def calculateHash(filePath):
         return hash_md5.hexdigest()
 
 def hashAllFiles(directory):
+    writeFile=open("hashes.json", "r+")
+    data = ''
     for root, directories, files in os.walk(directory):
         for fileName in files:
             filePath = os.path.join(root, fileName)
             hashValue = calculateHash(filePath)
-            data = f'{fileName}:{hashValue}'
-            with open("hashes.json", "r+") as writeFile:
-                json.dump(data, writeFile)
-            return(data)
+            data += f'{fileName}:{hashValue}\n'
+    json.dump(data, writeFile)
+    return(data)
 
 if __name__ == "__main__":
     directory = chooseDirectory()
