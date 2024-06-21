@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/md5.h>
+#include <md5.h>
 
 unsigned char result[MD5_DIGEST_LENGTH];
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     printf("file size:\t%lu\n", file_size);
 
     file_buffer = (char *)mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
-    MD5((unsigned char*) file_buffer, file_size, result);
+    _MD5_H_((unsigned char*) file_buffer, file_size, result);
     munmap(file_buffer, file_size);
 
     print_md5_sum(result);
