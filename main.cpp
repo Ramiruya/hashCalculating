@@ -1,57 +1,55 @@
-#include <sys/types.h>
+#include <filesystem>
+#include <iostream>
+#include <string>
 #include <sys/stat.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <md5.h>
+#include <fstream>
+#include <vector>
 
-unsigned char result[MD5_DIGEST_LENGTH];
+namespace fs = std::filesystem;
 
-// Print the MD5 sum as hex-digits.
-void print_md5_sum(unsigned char* md) {
-    int i;
-    for(i=0; i <MD5_DIGEST_LENGTH; i++) {
-        printf("%02x",md[i]);
+std::string calculateMD5Hash(const std::string& filename) {
+    std::ifstream file(filename, std::ifstream::binary | std::ifstream::ate);
+    std::string hash;
+
+    if (file.is_open()) {
+        size_t fileSize = file.tellg();
+        file.seekg(0, std::ifstream::beg);
+
+        std::vector<char> buffer(fileSize);
+
+        file.read(buffer.data(), fileSize);
+        file.close();
+
+        unsigned char result[MD5_DIGEST_LENGTH];
+        _MD5_H_((unsigned char*)buffer.data(), fileSize, result);
+
+        for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+            std::stringstream stream;
+            stream << std::hex << (int)result[i];
+            hash += stream.str();
+        }
     }
+    return hash;
 }
 
-// Get the size of the file by its file descriptor
-unsigned long get_size_by_fd(int fd) {
-    struct stat statbuf;
-    if(fstat(fd, &statbuf) < 0) exit(-1);
-    return statbuf.st_size;
-}
+int main()
+{
+    // Paste the desired path!!!
+    std::string path
+        = "/home/folder/";
 
-int main(int argc, char *argv[]) {
-    int file_descript;
-    unsigned long file_size;
-    char* file_buffer;
+    struct stat sb;
 
-    if(argc != 2) {
-        printf("Must specify the file\n");
-        exit(-1);
+    for (const auto& entry : fs::directory_iterator(path)) {
+
+        std::filesystem::path outfilename = entry.path();
+        std::string outfilename_str = outfilename.string();
+        const char* path = outfilename_str.c_str();
+
+        if (stat(path, &sb) == 0 && !(sb.st_mode & S_IFDIR)) {
+            std::string hash = calculateMD5Hash(outfilename_str); 
+            std::cout << path << " " << hash << std::endl;
+        }
     }
-    printf("using file:\t%s\n", argv[1]);
-
-    file_descript = open(argv[1], O_RDONLY);
-    if(file_descript < 0) exit(-1);
-
-    file_size = get_size_by_fd(file_descript);
-    printf("file size:\t%lu\n", file_size);
-
-    file_buffer = (char *)mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
-    _MD5_H_((unsigned char*) file_buffer, file_size, result);
-    munmap(file_buffer, file_size);
-
-    print_md5_sum(result);
-    printf("  %s\n", argv[1]);
-
-/*TO DO
-    Fix incorrect hashes (deal with zeros)
-    GUI
-
-    return 0;
 }
