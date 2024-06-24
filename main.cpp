@@ -49,5 +49,9 @@ int main(int argc, char *argv[]) {
     print_md5_sum(result);
     printf("  %s\n", argv[1]);
 
+/*TO DO
+    Fix incorrect hashes (deal with zeros)
+    GUI
+
     return 0;
 }
