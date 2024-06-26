@@ -3,6 +3,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QFileDialog, QVBoxLayout, QTextEdit, QHBoxLayout
 from PyQt5.QtCore import QDir
 import hashlib
+import binascii
 
 def selectDirectory(directoryLineEdit):
     dialog = QFileDialog()
@@ -15,12 +16,12 @@ def calculateHash(directoryLineEdit, resultTextEdit, folderNameLineEdit, general
     try:
         fileInfo = hashAllFiles(directory)
         resultTextEdit.clear()
-        for file_name, info in fileInfo.items():
-            resultTextEdit.append(f"Название: {file_name}\nРазмер: {info['size']} Байт\nХэш: {info['hash']}\n")
+        for file_path, info in fileInfo.items():
+            resultTextEdit.append(f"Файл: {file_path}\nРазмер: {info['size']} байт\nХэш: {info['hash']}\n")
         
         generalHash = hashlib.md5()
-        for file_name, info in sorted(fileInfo.items()):
-            generalHash.update(file_name.encode('utf-8'))
+        for file_path, info in sorted(fileInfo.items()):
+            generalHash.update(file_path.encode('utf-8'))
             generalHash.update(str(info['size']).encode('utf-8'))
             generalHash.update(info['hash'].encode('utf-8'))
         
@@ -38,7 +39,8 @@ def hashAllFiles(directory):
             with open(path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
-            fileInfo[path.name] = {
+            relativePath = path.relative_to(directory)
+            fileInfo[str(relativePath)] = {
                 'size': file_size,
                 'hash': hash_md5.hexdigest()
             }
@@ -47,7 +49,7 @@ def hashAllFiles(directory):
 def main():
     app = QApplication(sys.argv)
     window = QWidget()
-    window.setGeometry(100, 100, 800, 400)
+    window.setGeometry(100, 100, 600, 400)
     window.setWindowTitle("Calculate MD5 Hash")
 
     directoryLineEdit = QLineEdit()
